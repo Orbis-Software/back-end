@@ -66,6 +66,7 @@ class JobResource extends JsonResource
                         'origin' => $t->origin,
                         'destination' => $t->destination,
                         'status' => $t->status?->value,
+                        'updated_at' => $t->updated_at?->toISOString(),
                         'created_at' => $t->created_at?->toISOString(),
                     ])
                 : [],

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 use App\Enums\TransportMode;
+use App\Enums\TransportStatus;
 
 class StoreJobTransportRequest extends FormRequest
 {
@@ -20,20 +21,28 @@ class StoreJobTransportRequest extends FormRequest
                 'required',
                 new Enum(TransportMode::class),
             ],
+
             'origin' => [
                 'required',
                 'string',
                 'max:255',
             ],
+
             'destination' => [
                 'required',
                 'string',
                 'max:255',
             ],
+
             'sequence' => [
                 'nullable',
                 'integer',
                 'min:1',
+            ],
+
+            'status' => [
+                'nullable',
+                new Enum(TransportStatus::class),
             ],
         ];
     }
@@ -44,6 +53,7 @@ class StoreJobTransportRequest extends FormRequest
             'transport_mode.required' => 'Transport mode is required.',
             'origin.required' => 'Origin is required.',
             'destination.required' => 'Destination is required.',
+            'status.enum' => 'Invalid transport status provided.',
         ];
     }
 }

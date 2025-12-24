@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Models\Job;
 use App\Models\JobTransport;
 use App\Enums\JobStatus;
+use App\Enums\TransportStatus;
 use App\Repositories\Contracts\JobTransportRepositoryInterface;
 use Illuminate\Support\Collection;
 use RuntimeException;
+use Illuminate\Support\Facades\Log;
 
 class JobTransportService extends BaseService
 {
@@ -39,6 +41,7 @@ class JobTransportService extends BaseService
             'destination' => $data['destination'],
             'sequence' => $data['sequence']
                 ?? ($job->transports()->max('sequence') + 1),
+            'status' => $data['status'] ?? TransportStatus::Planned->value,
         ]);
     }
 
@@ -48,7 +51,9 @@ class JobTransportService extends BaseService
 
         $transport = $this->findOrFail($id);
 
-        return $this->repository->update($transport, $data);
+        $updated = $this->repository->update($transport, $data);
+
+        return $updated;
     }
 
     public function deleteTransport(int $id, Job $job): bool
