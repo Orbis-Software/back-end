@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
-use App\Services\AuthService;
 use App\Http\Resources\UserResource;
+use App\Services\AuthService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AuthController
+class AuthController extends Controller
 {
     public function __construct(
         protected AuthService $service
@@ -15,9 +16,12 @@ class AuthController
 
     public function login(LoginRequest $request)
     {
+        $deviceName = substr((string) $request->header('User-Agent', 'spa-token'), 0, 255);
+
         $result = $this->service->login(
-            $request->email,
-            $request->password
+            email: $request->email,
+            password: $request->password,
+            deviceName: $deviceName
         );
 
         return response()->json([
@@ -31,9 +35,22 @@ class AuthController
         return new UserResource(Auth::user());
     }
 
-    public function logout()
+    /**
+     * Logout only the current token (recommended for multi-device).
+     */
+    public function logout(): \Illuminate\Http\Response
     {
-        $this->service->logout();
+        $this->service->logoutCurrentToken();
+        return response()->noContent();
+    }
+
+    /**
+     * OPTIONAL: Logout all devices (delete all tokens).
+     * Add route if you want this endpoint.
+     */
+    public function logoutAll(): \Illuminate\Http\Response
+    {
+        $this->service->logoutAllTokens();
         return response()->noContent();
     }
 }

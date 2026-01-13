@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use App\Repositories\Contracts\UserRepositoryInterface;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthService
 {
@@ -13,27 +15,60 @@ class AuthService
         protected UserRepositoryInterface $users
     ) {}
 
-    public function login(string $email, string $password): array
+    public function login(string $email, string $password, ?string $deviceName = null): array
     {
         $user = $this->users->findByEmail($email);
 
         if (! $user || ! Hash::check($password, $user->password)) {
+            // Generic error: do not reveal whether email exists
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials'],
             ]);
         }
 
+        $tokenName = $deviceName ?: 'spa-token';
+
+        // Optional abilities (future):
+        // $abilities = ['orbis:access'];
+
         return [
             'user'  => $user,
-            'token' => $user->createToken('spa-token')->plainTextToken,
+            'token' => $user->createToken($tokenName /*, $abilities*/)->plainTextToken,
         ];
     }
 
-    public function logout(): void
+    /**
+     * Logout only the current access token (current device).
+     */
+    public function logoutCurrentToken(): void
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
 
-        $user?->tokens()->delete();
+        if (! $user) {
+            return;
+        }
+
+        /** @var PersonalAccessToken|null $token */
+        $token = $user->currentAccessToken();
+
+        if ($token) {
+            $token->delete();
+        }
+    }
+
+    /**
+     * Logout all devices (delete all tokens).
+     */
+    public function logoutAllTokens(): void
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (! $user) {
+            return;
+        }
+
+        $user->tokens()->delete();
     }
 }

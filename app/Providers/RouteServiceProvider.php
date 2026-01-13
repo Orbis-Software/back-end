@@ -16,10 +16,24 @@ class RouteServiceProvider extends ServiceProvider
 
     protected function configureRateLimiting(): void
     {
+        // Default API limiter (keep this)
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(
                 optional($request->user())->id ?: $request->ip()
             );
+        });
+
+        // Dedicated login limiter (add this)
+        RateLimiter::for('login', function (Request $request) {
+            $email = (string) $request->input('email');
+
+            return [
+                // Per-IP protection
+                Limit::perMinute(10)->by($request->ip()),
+
+                // Per email + IP protection (prevents targeting one account)
+                Limit::perMinute(5)->by(strtolower($email).'|'.$request->ip()),
+            ];
         });
     }
 }

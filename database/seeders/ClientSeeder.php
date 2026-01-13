@@ -10,7 +10,7 @@ class ClientSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::where('email', 'admin@pc-cargo.test')->firstOrFail();
+        $user = User::where('email', 'admin@orbis.test')->firstOrFail();
 
         Client::insert([
             [
