@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JobCostController;
@@ -119,4 +120,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [JobTransportController::class, 'destroy']);
     });
 
+});
+
+
+Route::get('/_migrate', function () {
+    $token = request()->query('token');
+
+    if (!$token || $token !== 'orbis_migrate_2026_01_14') {
+        abort(403, 'Forbidden');
+    }
+
+    Artisan::call('migrate', ['--force' => true]);
+
+    return response()->json([
+        'ok' => true,
+        'output' => Artisan::output(),
+    ]);
 });
