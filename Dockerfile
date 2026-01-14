@@ -1,8 +1,10 @@
-# ---- Build stage: install composer deps ----
+# ---- Build stage: install composer deps (no scripts because artisan isn't copied yet) ----
 FROM composer:2 AS vendor
 WORKDIR /app
+
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
+
 
 # ---- Runtime stage: PHP + Apache ----
 FROM php:8.2-apache
@@ -14,24 +16,26 @@ RUN apt-get update && apt-get install -y \
   && a2enmod rewrite \
   && rm -rf /var/lib/apt/lists/*
 
-# Apache: point DocumentRoot to /var/www/html/public
+# Apache: point DocumentRoot to /public
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
  && sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 WORKDIR /var/www/html
 
-# Copy app source
+# Copy app source first (so artisan exists)
 COPY . .
 
 # Copy vendor from build stage
 COPY --from=vendor /app/vendor ./vendor
 
-# Laravel permissions
+# Permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Render provides PORT; Apache listens on 80 internally, Render maps it.
 EXPOSE 80
 
-# Simple entrypoint: cache config/routes and run apache
-CMD php artisan config:cache || true && php artisan route:cache || true && apache2-foreground
+# Run Laravel safe boot steps at container start, then start Apache
+CMD php artisan package:discover --ansi || true \
+ && php artisan config:cache || true \
+ && php artisan route:cache || true \
+ && apache2-foreground
