@@ -19,12 +19,13 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        $emailRule = app()->environment('production')
-            ? 'email:rfc,dns'
-            : 'email:rfc';
+        // $emailRule = app()->environment('production')
+        //     ? 'email:rfc,dns'
+        //     : 'email:rfc';
 
         return [
-            'email'    => ['required', $emailRule],
+            // 'email'    => ['required', $emailRule],
+            'email' => ['required', 'email'],
             'password' => ['required', 'string'], // login doesn't need min length (policy belongs to register/reset)
         ];
     }
