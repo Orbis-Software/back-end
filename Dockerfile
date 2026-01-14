@@ -11,7 +11,7 @@ FROM php:8.2-apache
 
 # System deps + PHP extensions commonly needed by Laravel
 RUN apt-get update && apt-get install -y \
-    git unzip libpng-dev libonig-dev libzip-dev libicu-dev \
+    git unzip libpng-dev libonig-dev libzip-dev libicu-dev libpq-dev \
   && docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring zip intl \
   && a2enmod rewrite \
   && rm -rf /var/lib/apt/lists/*
