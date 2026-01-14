@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JobCostController;
@@ -126,18 +127,44 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/_migrate', function () {
     $token = request()->query('token');
 
+    // Move token to env later; keep for now since you're testing.
     if (!$token || $token !== 'orbis_migrate_2026_01_14') {
         abort(403, 'Forbidden');
     }
 
-    Artisan::call('migrate:fresh', [
-        '--force' => true,
-        '--seed'  => true,
-    ]);
+    try {
+        // 1) Wipe DB hard (important for Postgres: also drops views/types)
+        Artisan::call('db:wipe', [
+            '--force' => true,
+            '--drop-views' => true,
+            '--drop-types' => true,
+        ]);
 
-    return response()->json([
-        'ok' => true,
-        'output' => Artisan::output(),
-    ]);
+        // 2) Run migrations verbose
+        Artisan::call('migrate', [
+            '--force' => true,
+            '--verbose' => true,
+        ]);
+
+        // 3) Seed
+        Artisan::call('db:seed', [
+            '--force' => true,
+            '--verbose' => true,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'output' => Artisan::output(),
+        ]);
+    } catch (\Throwable $e) {
+        Log::error('MIGRATE_FAILED', [
+            'message' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'ok' => false,
+            'message' => $e->getMessage(),
+            'output' => Artisan::output(), // this is the gold
+        ], 500);
+    }
 });
-

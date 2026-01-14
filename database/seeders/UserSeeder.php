@@ -10,16 +10,20 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@orbis.test',
-            'password' => Hash::make('password'),
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@orbis-software.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+            ]
+        );
 
-        User::create([
-            'name' => 'Operations Staff',
-            'email' => 'ops@orbis.test',
-            'password' => Hash::make('password'),
-        ]);
+        User::updateOrCreate(
+            ['email' => 'ops@orbis-software.com'],
+            [
+                'name' => 'Operations Staff',
+                'password' => Hash::make('password'),
+            ]
+        );
     }
 }
