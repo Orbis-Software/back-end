@@ -130,10 +130,14 @@ Route::get('/_migrate', function () {
         abort(403, 'Forbidden');
     }
 
-    Artisan::call('migrate', ['--force' => true]);
+    Artisan::call('migrate:fresh', [
+        '--force' => true,
+        '--seed'  => true,
+    ]);
 
     return response()->json([
         'ok' => true,
         'output' => Artisan::output(),
     ]);
 });
+
