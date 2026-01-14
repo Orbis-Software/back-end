@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: orbis-back-end
+    env: docker
+    plan: free
+    autoDeploy: true
