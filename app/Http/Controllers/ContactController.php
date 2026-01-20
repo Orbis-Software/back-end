@@ -16,9 +16,9 @@ class ContactController extends Controller
         $perPage = (int) $request->query('per_page', 15);
 
         $filters = [
-
-            'contact_type' => $request->query('contact_type'),
-            'status'       => $request->query('status'),
+            'company_id'    => $request->user()->company_id,
+            'contact_type'  => $request->query('contact_type'),
+            'status'        => $request->query('status'),
         ];
 
         return response()->json($this->service->paginateFiltered($filters, $perPage));
@@ -26,7 +26,7 @@ class ContactController extends Controller
 
     public function show(int $id)
     {
-        return response()->json($this->service->findOrFail($id));
+        return response()->json($this->service->findWithPeopleOrFail($id));
     }
 
     public function store(StoreContactRequest $request)
