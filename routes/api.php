@@ -5,7 +5,10 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ContactPersonController;
+use App\Http\Controllers\TransportJobController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +35,10 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
 
-
+    Route::apiResource('companies', CompanyController::class);
+    Route::apiResource('contacts', ContactController::class);
+    Route::apiResource('contact-people', ContactPersonController::class);
+    Route::apiResource('transport-jobs', TransportJobController::class);
 
 });
 
