@@ -24,6 +24,8 @@ class AuthController extends Controller
             deviceName: $deviceName
         );
 
+        $result['user']->load('company');
+
         return response()->json([
             'user'  => new UserResource($result['user']),
             'token' => $result['token'],
@@ -32,7 +34,8 @@ class AuthController extends Controller
 
     public function me()
     {
-        return new UserResource(Auth::user());
+        $user = $this->service->me();
+        return new UserResource($user);
     }
 
     /**

@@ -35,7 +35,10 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::apiResource('companies', CompanyController::class);
+    // Route::apiResource('companies', CompanyController::class);
+    Route::get('/company', [CompanyController::class, 'show']);
+    Route::post('/company', [CompanyController::class, 'update']);
+    Route::patch('/company', [CompanyController::class, 'update']);
     Route::apiResource('contacts', ContactController::class);
     Route::apiResource('contact-people', ContactPersonController::class);
     Route::apiResource('transport-jobs', TransportJobController::class);

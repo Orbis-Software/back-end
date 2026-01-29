@@ -34,20 +34,22 @@ class ContactController extends Controller
         $data = $request->validated();
         $data['company_id'] = $request->user()->company_id;
 
-        $contact = $this->service->create($data);
+        $contact = $this->service->createWithTypes($data);
+
         return response()->json($contact, 201);
     }
 
-
     public function update(UpdateContactRequest $request, int $id)
     {
-        $contact = $this->service->update($id, $request->validated());
+        $contact = $this->service->updateWithTypes($id, $request->validated());
+
         return response()->json($contact);
     }
 
     public function destroy(int $id)
     {
         $this->service->delete($id);
+
         return response()->json(['deleted' => true]);
     }
 }

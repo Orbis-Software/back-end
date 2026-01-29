@@ -20,21 +20,38 @@ class AuthService
         $user = $this->users->findByEmail($email);
 
         if (! $user || ! Hash::check($password, $user->password)) {
-            // Generic error: do not reveal whether email exists
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials'],
             ]);
         }
 
-        $tokenName = $deviceName ?: 'spa-token';
+        // ✅ Ensure company is present in response
+        $user->load('company');
 
-        // Optional abilities (future):
-        // $abilities = ['orbis:access'];
+        $tokenName = $deviceName ?: 'spa-token';
 
         return [
             'user'  => $user,
-            'token' => $user->createToken($tokenName /*, $abilities*/)->plainTextToken,
+            'token' => $user->createToken($tokenName)->plainTextToken,
         ];
+    }
+
+    /**
+     * ✅ Authenticated user profile (me) with company loaded.
+     * Keeps controller thin + ensures refresh won't drop company.
+     */
+    public function me(): User
+    {
+        /** @var User|null $user */
+        $user = Auth::guard('sanctum')->user();
+
+        if (! $user) {
+            abort(401, 'Unauthenticated');
+        }
+
+        $user->load('company');
+
+        return $user;
     }
 
     /**
@@ -43,7 +60,7 @@ class AuthService
     public function logoutCurrentToken(): void
     {
         /** @var User|null $user */
-        $user = Auth::user();
+        $user = Auth::guard('sanctum')->user();
 
         if (! $user) {
             return;
@@ -63,7 +80,7 @@ class AuthService
     public function logoutAllTokens(): void
     {
         /** @var User|null $user */
-        $user = Auth::user();
+        $user = Auth::guard('sanctum')->user();
 
         if (! $user) {
             return;

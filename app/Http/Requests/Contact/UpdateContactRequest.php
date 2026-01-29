@@ -16,7 +16,9 @@ class UpdateContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'contact_type'        => ['sometimes', 'required', new Enum(ContactType::class)],
+            'contact_types'   => ['sometimes', 'array', 'min:1'],
+            'contact_types.*' => ['required', 'distinct', new Enum(ContactType::class)],
+
             'address'             => ['sometimes', 'nullable', 'string', 'max:255'],
             'country'             => ['sometimes', 'nullable', 'string', 'size:2'],
             'eori'                => ['sometimes', 'nullable', 'string', 'max:255'],
