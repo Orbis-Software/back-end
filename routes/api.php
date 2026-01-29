@@ -54,15 +54,34 @@ Route::get('/_migrate', function () {
     }
 
     try {
-        Artisan::call('migrate', ['--force' => true, '--verbose' => true]);
-        Artisan::call('db:seed', ['--force' => true, '--verbose' => true]);
+        // ✅ Ensure storage symlink exists
+        Artisan::call('storage:link');
+        $storageOutput = Artisan::output();
+
+        // ✅ Run migrations
+        Artisan::call('migrate', [
+            '--force' => true,
+            '--verbose' => true,
+        ]);
+        $migrateOutput = Artisan::output();
+
+        Artisan::call('db:seed', [
+            '--force' => true,
+            '--verbose' => true,
+        ]);
+        $seedOutput = Artisan::output();
 
         return response()->json([
             'ok' => true,
-            'output' => Artisan::output(),
+            'storage_link' => $storageOutput,
+            'migrate' => $migrateOutput,
+            'seed' => $seedOutput,
         ]);
     } catch (\Throwable $e) {
-        Log::error('MIGRATE_FAILED', ['message' => $e->getMessage()]);
+        Log::error('MIGRATE_FAILED', [
+            'message' => $e->getMessage(),
+        ]);
+
         return response()->json([
             'ok' => false,
             'message' => $e->getMessage(),
