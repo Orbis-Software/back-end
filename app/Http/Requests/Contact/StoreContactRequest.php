@@ -16,11 +16,9 @@ class StoreContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // If you want true multi-tenant safety, DO NOT accept company_id from request.
-            // Instead set it in controller/service from auth()->user()->company_id.
-            // 'company_id' => ['required', 'integer', 'exists:companies,id'],
+            'contact_types'   => ['required', 'array', 'min:1'],
+            'contact_types.*' => ['required', 'distinct', new Enum(ContactType::class)],
 
-            'contact_type'        => ['required', new Enum(ContactType::class)],
             'address'             => ['nullable', 'string', 'max:255'],
             'country'             => ['nullable', 'string', 'size:2'],
             'eori'                => ['nullable', 'string', 'max:255'],

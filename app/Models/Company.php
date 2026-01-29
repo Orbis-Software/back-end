@@ -14,7 +14,9 @@ class Company extends Model
         'registered_address',
         'operational_address',
         'default_currency',
+        'language',
         'time_zone',
+        'logo',
         'status',
     ];
 

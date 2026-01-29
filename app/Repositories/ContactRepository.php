@@ -16,14 +16,16 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
 
     public function paginateFiltered(array $filters, int $perPage = 15): LengthAwarePaginator
     {
-        $q = $this->model->newQuery()->with(['people']);
+        $q = $this->model->newQuery()->with(['people', 'types']);
 
         if (!empty($filters['company_id'])) {
             $q->where('company_id', (int) $filters['company_id']);
         }
 
         if (!empty($filters['contact_type'])) {
-            $q->where('contact_type', $filters['contact_type']);
+            $q->whereHas('types', function ($sub) use ($filters) {
+                $sub->where('contact_type', $filters['contact_type']);
+            });
         }
 
         if (!empty($filters['status'])) {
@@ -36,7 +38,7 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
     public function findWithPeople(int $id): ?Model
     {
         return $this->model->newQuery()
-            ->with(['people'])
+            ->with(['people', 'types'])
             ->find($id);
     }
 }

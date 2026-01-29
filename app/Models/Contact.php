@@ -10,7 +10,6 @@ class Contact extends Model
 {
     protected $fillable = [
         'company_id',
-        'contact_type',
         'address',
         'country',
         'eori',
@@ -31,5 +30,10 @@ class Contact extends Model
     public function people(): HasMany
     {
         return $this->hasMany(ContactPerson::class, 'contact_id');
+    }
+
+    public function types(): HasMany
+    {
+        return $this->hasMany(ContactContactType::class, 'contact_id');
     }
 }
